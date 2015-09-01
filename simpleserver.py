@@ -1,5 +1,5 @@
 import asyncio
-from ean_ressolver import resolve_ean
+from ean_resolver import resolve_ean
 import sqlite3
 
 #Dir where the images of the scanned products are saved
