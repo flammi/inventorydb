@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<a id="backlink" href="javascript:window.history.back()"><i class="fa fa-arrow-circle-o-left fa-3x"></i></a>
+<div id="content">
+    <h1>{{title}}</h1>
+
+    <img src="/static/images/{{imgfile}}" />
+
+    <ul>
+        <li>Dauer: {{duration}} min</li>
+        <li>Studio: {{studio}}</li>
+    </ul>
+
+    <h2>Beschreibung</h2>
+    {{description}}
+</div>
+{% endblock %}

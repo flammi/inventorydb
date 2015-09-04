@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="content" style="margin-top: 20px">
+Mit EAN aus dem Internet importieren:
+<form action="/add" method="post">
+    <input type="text" name="ean">
+    <input type="submit" value="Suchen">
+</form>
+<br>
+{% if added_item %}
+<div>
+{{added_item.title}}
+</div>
+</div>
+{% endif %}
+{% endblock %}

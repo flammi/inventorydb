@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html
+<head>
+    <title>Inventory DB</title>
+    <link rel="stylesheet" href="/static/styles.css" /> 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+</head>
+<script src="/static/jquery-2.1.4.js"></script>
+<body>
+<div id="sidemenu" >
+<a href="/"><div class="menuItem" style="">DVDs</div></a>
+<a href="/"><div class="menuItem" style="">Bücher</div></a>
+<a href="/"><div class="menuItem" style="">Hörbücher</div></a>
+<a href="/errors"><div class="menuItem" style="">Fehlerhafte Einträge</div></a>
+<a href="/serversettings"><div class="menuItem" style="">Servereinstellungen</div></a>
+</div>
+{% block content %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="content" style="margin-top: 20px">
+    <div style="color: black; margin-right: 50px; margin-bottom: 15px">
+        <a href="/add" >
+        <i style="vertical-align: middle" class="fa fa-plus-circle fa-3x"></i>
+        <span style="vertical-align: middle">Eintrag hinzufügen</span>
+        </a>
+    </div>
+{% for item in items %}
+    <a href="/product/{{item.ean}}">
+        <div class="item">
+            <img width="150" src="/static/images/{{item.imgfile}}" alt="{{item.title}}"/>
+            {{item.title}}
+            <br>
+            <span class="item-ean">{{item.ean}}</span>
+            <br>
+            <span class="item-ean">{{item.duration}} min</span>
+        </div>
+    </a>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="content">
+<h2>Servereinstellungen</h2>
+<img style="margin-right: 100px; float: right" src="/static/serverbarcode.png" />
+
+IP-Adressen:
+<ul>
+{% for ip in ips %}
+<li></li>
+{% else %}
+<li>keine IPs gefunden!</li>
+{% endfor %}
+</ul>
+</div>
+{% endblock %}
