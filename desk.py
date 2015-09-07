@@ -1,15 +1,20 @@
 #!/usr/bin/python3
 from gi.repository import Gtk
+from gi.repository import WebKit
 import sqlite3
 
-class MainWindowHandler:
-    def onSearchClick(self, btn):
-        print("Test!")
+class MainWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Inventory DB")
+        self.set_size_request(1000,500)
+        webView = WebKit.WebView()
+        scroll = Gtk.ScrolledWindow()
+        scroll.add(webView)
+        self.add(scroll)
+        #webView.load_uri("http://127.0.0.1:5000/test")
+        webView.load_uri("http://127.0.0.1:5000")
 
-builder = Gtk.Builder()
-builder.add_from_file("gui.glade")
-win = builder.get_object("window1")
-builder.connect_signals(MainWindowHandler())
+win = MainWindow()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()
 Gtk.main()

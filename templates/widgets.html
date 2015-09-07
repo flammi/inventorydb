@@ -1,0 +1,42 @@
+{% macro itemimages(items) %}
+{% for item in items %}
+    <a href="/product/{{item.ean}}">
+        <div class="item">
+            <img width="150" src="/static/images/{{item.imgfile}}" alt="{{item.title}}"/>
+            {{item.title}}
+            <br>
+            <span class="item-ean">{{item.ean}}</span>
+            <br>
+            <span class="item-ean">{{item.duration}} min</span>
+        </div>
+    </a>
+{% endfor %}
+{% endmacro %}
+
+{% macro itemtable(items) %}
+{% for item in items %}
+    <a href="/product/{{item.ean}}">
+    <div style="overflow: auto; margin-bottom: 20px">
+    <img width="100" src="/static/images/{{item.imgfile}}" alt="{{item.title}}" style="float: left"/>
+    <div style="margin-left: 120px">
+    <b>{{item.title}}</b> <br>
+    <b>Dauer:</b> {{item.duration}} min<br>
+    <b>Studio:</b> {{item.studio}}<br>
+    <b>Beschreibung:</b> {{item.description}}<br>
+    </div>
+    </div>
+    </a>
+{% endfor %}
+{% endmacro %}
+
+{% macro select(name, choices, default) %}
+<select name="{{name}}">
+{% for elm in choices %}
+{% if elm[0] == default %}
+<option value="{{elm[0]}}" selected="selected">{{elm[1]}}</option>
+{% else %}
+<option value="{{elm[0]}}">{{elm[1]}}</option>
+{% endif %}
+{% endfor %}
+</select>
+{% endmacro %}

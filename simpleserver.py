@@ -27,11 +27,15 @@ class EANRemoteScannerServer(asyncio.Protocol):
         db_set = self.db_cursor.fetchmany()
         if len(db_set) == 0:
             print("Not in DB, resolving...")
-            result = resolve_ean(ean, dl_dir=DLDIR)
-            print(result)
-            self.db_cursor.execute("INSERT INTO movies VALUES (?,?,?,?,?,?)", (ean ,result.title, ",".join(result.artists), result.duration, None, result.studio))
-            DB.commit()
-            self.transport.write(("NEW: " + result.title + "\n").encode("utf-8"))
+            try:
+                result = resolve_ean(ean, dl_dir=DLDIR)
+                self.db_cursor.execute("INSERT INTO movies VALUES (?,?,?,?,?,?)", (ean ,result.title, ",".join(result.artists), result.duration, None, result.studio))
+                DB.commit()
+                self.transport.write(("NEW: " + result.title + "\n").encode("utf-8"))
+            except:
+                print("Error while resolving ean...")
+                self.db_cursor.execute("INSERT INTO movies (ean) VALUES (?)", (ean,))
+                DB.commit()
         else:
             self.transport.write(("ART: " + db_set[0][1] + "\n").encode("utf-8"))
             print("Already in DB:", db_set[0][0], "-", db_set[0][1])

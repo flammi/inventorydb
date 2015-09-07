@@ -1,3 +1,4 @@
+{% import "widgets.html" as widget %}
 {% extends "base.html" %}
 {% block content %}
 <div id="content" style="margin-top: 20px">
@@ -6,18 +7,24 @@
         <i style="vertical-align: middle" class="fa fa-plus-circle fa-3x"></i>
         <span style="vertical-align: middle">Eintrag hinzufügen</span>
         </a>
+        <span style="margin-left: 50px">
+        <form id="viewcontroller" style="display: inline">
+            Sortierung: 
+            {{widget.select("order", [("name","Name"), ("ean", "EAN"), ("duration", "Dauer"), ("created", "Erschienen") ], request.args["order"])}}
+            Ansicht:
+            {{widget.select("view", [("images", "Bilder"), ("table", "Tabelle") ], request.args["view"])}}
+        </form>
+        </span>
     </div>
-{% for item in items %}
-    <a href="/product/{{item.ean}}">
-        <div class="item">
-            <img width="150" src="/static/images/{{item.imgfile}}" alt="{{item.title}}"/>
-            {{item.title}}
-            <br>
-            <span class="item-ean">{{item.ean}}</span>
-            <br>
-            <span class="item-ean">{{item.duration}} min</span>
-        </div>
-    </a>
-{% endfor %}
+{% if view == "table" %}
+{{ widget.itemtable(items) }}
+{% else %}
+{{ widget.itemimages(items) }}
+{% endif %}
 </div>
+<script>
+$("#viewcontroller").change( function() {
+        $( this ).submit();
+        });
+</script>
 {% endblock %}
