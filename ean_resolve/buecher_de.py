@@ -53,7 +53,7 @@ def resolve_ean(ean):
     except:
         result["duration"] = None
 
-    result["created"] = attrs.get("Erscheinungstermin")
+    result["created"] = defNone(attrs.get("Erscheinungstermin"), lambda x: toDBDate(x, "%d.%m.%Y")) 
     result["studio"] = attrs.get("Hersteller")
 
     result["imgurl"] = html.find('.//img[@class="cover"]').attrib["src"]
