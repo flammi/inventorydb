@@ -16,7 +16,7 @@
         </form>
         </span>
     </div>
-{% if view == "table" %}
+{% if request.args["view"] == "table" %}
 {{ widget.itemtable(items) }}
 {% else %}
 {{ widget.itemimages(items) }}

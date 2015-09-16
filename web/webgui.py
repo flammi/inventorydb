@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, g
+#!/usr/bin/python3
+from flask import Flask, render_template, request, g, jsonify
+import datetime
+from flask.json import jsonify
 app = Flask(__name__)
 import sqlite3
 
@@ -33,28 +36,55 @@ def save_choice(args_dict, key, choices, default=None):
         result = default
     return result
 
+def ean_add_to_db(ean):
+    d = resolve_ean(ean, "images")
+    d["added_date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    print(d)
+
+    cur = get_db().cursor()
+    cur.execute("INSERT INTO inventory (ean, category, title, description, duration, imgfile, author, artists, created, added) VALUES (:ean, :type, :title, :description, :duration, :imgfile, :author, :artists, :created, :added_date)", d)
+    get_db().commit()
+
+    return d
+
 @app.route("/")
 def main():
     sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "created"])
     direction = save_choice(request.args, "dir", ["asc", "desc"])
-    view = save_choice(request.args, "view", ["table", "images"])
     
-    items = query_db("SELECT * FROM movies WHERE title IS NOT NULL ORDER BY {} {}".format(sortorder, direction))
+    items = query_db('SELECT * FROM inventory WHERE category = "movie" and title IS NOT NULL ORDER BY {} {}'.format(sortorder, direction))
 
-    return render_template("index.html", items=items, view=view)
+    return render_template("index.html", items=items)
+
+@app.route("/audiobooks")
+def audiobooks():
+    sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "created"])
+    direction = save_choice(request.args, "dir", ["asc", "desc"])
+    
+    items = query_db('SELECT * FROM inventory WHERE category = "audiobook" and title IS NOT NULL ORDER BY {} {}'.format(sortorder, direction))
+
+    return render_template("index.html", items=items)
+
+@app.route("/books")
+def books():
+    sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "created"])
+    direction = save_choice(request.args, "dir", ["asc", "desc"])
+    
+    items = query_db('SELECT * FROM inventory WHERE category = "book" and title IS NOT NULL ORDER BY {} {}'.format(sortorder, direction))
+    return render_template("index.html", items=items)
 
 @app.route("/search")
 def search():
     search_text = request.args.get("q")
     cur = get_db().cursor()
-    cur.execute("SELECT ean, title, imgfile, duration FROM movies WHERE title LIKE ?", ("%" + search_text + "%",))
+    cur.execute("SELECT ean, title, imgfile, duration FROM movies WHERE and title LIKE ?", ("%" + search_text + "%",))
     items = cur.fetchall()
     return render_template("index.html", items=items)
 
 @app.route("/product/<ean>")
 def dvdpage(ean):
     cur = get_db().cursor()
-    cur.execute("SELECT * FROM movies WHERE ean LIKE ?", (ean,))
+    cur.execute("SELECT * FROM inventory WHERE ean LIKE ?", (ean,))
     res = cur.fetchone()
     return render_template("detail.html", **res)
 
@@ -80,12 +110,7 @@ def errors():
 def add():
     d = None
     if "ean" in request.form:
-        d = resolve_ean(request.form["ean"], "images")
-        print(d)
-
-        cur = get_db().cursor()
-        cur.execute("INSERT INTO movies (ean, title, description, duration, imgfile, studio) VALUES (:ean, :title, :description, :duration, :imgfile, :studio)", d)
-        get_db().commit()
+        d = ean_add_to_db(request.form["ean"])
 
     return render_template("add.html", added_item=d)
 
@@ -106,10 +131,31 @@ def server_settings():
     return render_template("server_settings.html")
 
 
+import traceback
+
 #REST-API for Smartphone Scanner
 @app.route("/scannerapi", methods=["POST"])
 def push_scan_result():
-    pass
+    ean = request.form["ean"]
+    try:
+        res = query_db("SELECT * FROM inventory WHERE ean=?",[ean])
+        if len(res) == 0:
+            d = ean_add_to_db(ean)
+            d["newentry"] = True
+        else:
+            d = dict(res[0])
+            d["newentry"] = False 
+        return jsonify(d)
+    except:
+        cur = get_db().cursor()
+        cur.execute("INSERT INTO errors VALUES (:ean, :stacktrace)", {"ean":ean, "stacktrace": traceback.format_exc()})
+        get_db().commit()
+        return jsonify({"error": True})
+
+@app.route("/scannerapi", methods=["GET"])
+def push_scan_result_get():
+    d = query_db("SELECT * FROM movies")
+    return jsonify(d[0])
 
 if __name__ == "__main__":
     app.run("0.0.0.0", debug=True)
