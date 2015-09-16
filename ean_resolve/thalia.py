@@ -33,6 +33,7 @@ def resolve_ean(ean):
     else:
         result["type"] = "movie"
         result["artists"] = [elm.text for elm in html.findall('.//span[@class="oAuthorLinked"]/a')]
+        result["author"] = None
 
     #Extract simple attributes from the head of the page
     result["title"] = html.find('.//span[@class="oProductTitle"]').text
