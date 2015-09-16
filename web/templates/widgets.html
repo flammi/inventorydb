@@ -4,10 +4,13 @@
         <div class="item">
             <img width="150" src="/images/{{item.imgfile}}" alt="{{item.title}}"/>
             {{item.title}}
+
             <br>
-            <span class="item-ean">{{item.ean}}</span>
-            <br>
-            <span class="item-ean">{{item.duration}} min</span>
+            {% if item.category == "movie" %}
+                <span class="item-ean">{{item.duration}} min</span>
+            {% else %}
+                <span class="item-ean">{{item.author}}</span>
+            {% endif %}
         </div>
     </a>
 {% endfor %}
@@ -20,8 +23,15 @@
     <img width="100" src="/images/{{item.imgfile}}" alt="{{item.title}}" style="float: left"/>
     <div style="margin-left: 120px">
     <b>{{item.title}}</b> <br>
+    {% if item.category == "movie" %}
     <b>Dauer:</b> {{item.duration}} min<br>
     <b>Studio:</b> {{item.studio}}<br>
+    {% elif item.category == "audiobook" %}
+    <b>Author:</b> {{item.author}}<br>
+    <b>Dauer:</b> {{item.duration}} min<br>
+    {% else %}
+    <b>Author:</b> {{item.author}}<br>
+    {% endif %}
     <b>Beschreibung:</b> {{item.description}}<br>
     </div>
     </div>
