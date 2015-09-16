@@ -14,7 +14,7 @@ class EANNotResolved(Exception):
 def resolve_ean(ean, dl_dir=None):
     import os.path
     import re
-    from utils import download_image
+    from .utils import download_image
 
     for storename, func in RESOLVERS:
         res = func(ean)

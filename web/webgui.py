@@ -1,9 +1,10 @@
 #!/usr/bin/python3
-from flask import Flask, render_template, request, g, jsonify
+from flask import Flask, render_template, request, g, jsonify, send_from_directory
 import datetime
 from flask.json import jsonify
 app = Flask(__name__)
 import sqlite3
+import os.path
 
 from ean_resolve import resolve_ean
 
@@ -35,6 +36,10 @@ def save_choice(args_dict, key, choices, default=None):
     if result not in choices:
         result = default
     return result
+
+@app.route("/images/<filename>")
+def images(filename):
+    return send_from_directory(os.path.join(os.getcwd(), "images"), filename)
 
 def ean_add_to_db(ean):
     d = resolve_ean(ean, "images")
@@ -98,10 +103,10 @@ def errors():
         if newean.strip() != "":
             d = resolve_ean(newean, "images")
             resolved_data.append(d)
-            cur.execute("UPDATE movies SET title=:title, description=:description, duration=:duration, imgfile=:imgfile, studio=:studio WHERE ean=:ean", d)
+            cur.execute("UPDATE inventory SET title=:title, description=:description, duration=:duration, imgfile=:imgfile, studio=:studio WHERE ean=:ean", d)
             get_db().commit()
 
-    cur.execute("SELECT ean FROM movies WHERE title IS NULL")
+    cur.execute("SELECT ean FROM inventory WHERE title IS NULL")
     unsorteditems = cur.fetchall()
 
     return render_template("errors.html", eanlist=unsorteditems, resolved_data=resolved_data)

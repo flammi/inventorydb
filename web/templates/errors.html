@@ -22,7 +22,7 @@ Aufgelöst:
 {% for item in resolved_data %}
     <a href="/product/{{item.ean}}">
         <div class="item">
-            <img width="150" src="/static/images/{{item.imgfile}}" alt="{{item.title}}"/>
+            <img width="150" src="/images/{{item.imgfile}}" alt="{{item.title}}"/>
             {{item.title}}
             <br>
             <span class="item-ean">{{item.ean}}</span>
