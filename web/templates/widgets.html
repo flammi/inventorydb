@@ -8,7 +8,8 @@
 
             <br>
             {% if item.category == "movie" %}
-                <span class="item-ean">{{item.duration}} min</span>
+                <span class="item-ean">{{item.duration}} min</span><br>
+                <span class="item-ean">{{item.genre}}</span>
             {% else %}
                 <span class="item-ean">{{item.author}}</span>
             {% endif %}

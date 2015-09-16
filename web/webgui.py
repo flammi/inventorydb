@@ -57,7 +57,7 @@ def ean_add_to_db(ean):
         d["artists"] = ",".join(d["artists"]) 
 
     cur = get_db().cursor()
-    cur.execute("INSERT INTO inventory (ean, category, title, description, duration, imgfile, author, artists, created, added, studio) VALUES (:ean, :type, :title, :description, :duration, :imgfile, :author, :artists, :created, :added_date, :studio)", d)
+    cur.execute("INSERT INTO inventory (ean, category, title, description, duration, imgfile, author, artists, created, added, studio, genre) VALUES (:ean, :type, :title, :description, :duration, :imgfile, :author, :artists, :created, :added_date, :studio, :genre)", d)
     get_db().commit()
 
     return d

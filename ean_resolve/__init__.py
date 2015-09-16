@@ -1,6 +1,7 @@
 from . import thalia
 from . import buecher_de
 from . import rebuy
+from . import geizhals
 
 RESOLVERS = [
     ("Thalia", thalia.resolve_ean),
@@ -22,6 +23,14 @@ def resolve_ean(ean, dl_dir=None):
         #When the resolver found something -> return result and exit
         if res:
             res["ean"] = ean
+
+            #Resolve genre when movie
+            if res["type"] == "movie":
+                res["genre"] = geizhals.resolve_ean(ean)["genre"]
+            else:
+                res["genre"] = None
+
+            #Download pic when required
             if dl_dir:
                 filename = "{title}-{ean}.jpg".format(ean=res["ean"], title=re.sub("\W","", res["title"]))  
                 download_image(res["imgurl"], os.path.join(dl_dir, filename))
