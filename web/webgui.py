@@ -5,14 +5,21 @@ from flask.json import jsonify
 app = Flask(__name__)
 import sqlite3
 import os.path
+import time
 
 from ean_resolve import resolve_ean
+
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
 def get_db():
     db = getattr(g, 'database', None)
     if db is None:
         db = g.database = sqlite3.connect("test.db")
-        db.row_factory = sqlite3.Row
+        db.row_factory = dict_factory
     return db
 
 def query_db(statement, args=None):
@@ -46,37 +53,36 @@ def ean_add_to_db(ean):
     d["added_date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     print(d)
 
+    if isinstance(d["artists"], list):
+        d["artists"] = ",".join(d["artists"]) 
+
     cur = get_db().cursor()
-    cur.execute("INSERT INTO inventory (ean, category, title, description, duration, imgfile, author, artists, created, added) VALUES (:ean, :type, :title, :description, :duration, :imgfile, :author, :artists, :created, :added_date)", d)
+    cur.execute("INSERT INTO inventory (ean, category, title, description, duration, imgfile, author, artists, created, added, studio) VALUES (:ean, :type, :title, :description, :duration, :imgfile, :author, :artists, :created, :added_date, :studio)", d)
     get_db().commit()
 
     return d
 
-@app.route("/")
-def main():
+def query_items(category):
     sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "created"])
     direction = save_choice(request.args, "dir", ["asc", "desc"])
     
-    items = query_db('SELECT * FROM inventory WHERE category = "movie" and title IS NOT NULL ORDER BY {} {}'.format(sortorder, direction))
+    items = query_db('SELECT * FROM inventory WHERE category = "{}" and title IS NOT NULL ORDER BY {} {}'.format(category, sortorder, direction))
+    for i in items:
+        i["created"] = time.strftime("%d.%m.%Y", time.strptime(i["created"], "%Y-%m-%d"))
 
     return render_template("index.html", items=items)
+
+@app.route("/")
+def main():
+    return query_items("movie")
 
 @app.route("/audiobooks")
 def audiobooks():
-    sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "created"])
-    direction = save_choice(request.args, "dir", ["asc", "desc"])
-    
-    items = query_db('SELECT * FROM inventory WHERE category = "audiobook" and title IS NOT NULL ORDER BY {} {}'.format(sortorder, direction))
-
-    return render_template("index.html", items=items)
+    return query_items("audiobook")
 
 @app.route("/books")
 def books():
-    sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "created"])
-    direction = save_choice(request.args, "dir", ["asc", "desc"])
-    
-    items = query_db('SELECT * FROM inventory WHERE category = "book" and title IS NOT NULL ORDER BY {} {}'.format(sortorder, direction))
-    return render_template("index.html", items=items)
+    return query_items("book")
 
 @app.route("/search")
 def search():
@@ -91,6 +97,7 @@ def dvdpage(ean):
     cur = get_db().cursor()
     cur.execute("SELECT * FROM inventory WHERE ean LIKE ?", (ean,))
     res = cur.fetchone()
+    res["created"] = time.strftime("%d.%m.%Y", time.strptime(res["created"], "%Y-%m-%d"))
     return render_template("detail.html", **res)
 
 @app.route("/errors", methods=["GET", "POST"])

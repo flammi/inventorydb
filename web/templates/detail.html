@@ -6,19 +6,28 @@
 
     <img src="/images/{{imgfile}}" />
     
-    <div style="float: right">
-        Links:
-        <a href="http://www.wikipedia.de/go?l=de&q={{title}}">Wikipedia</a><br>
-        <a href="http://www.youtube.com/results?search_query={{title}}">Youtube</a><br>
-        <a href="http://www.imdb.com/find?q={{title}}">IMDB</a><br>
-    </div>
 
     <ul>
+        <li>Erscheinungsdatum: {{created}} </li>
+{% if category == "book" %}
+        <li>Author: {{author}} </li>
+{% elif category == "movie" %}
         <li>Dauer: {{duration}} min</li>
         <li>Studio: {{studio}}</li>
+{% else %}
+        <li>Author: {{author}}</li>
+        <li>Dauer: {{duration}} min</li>
+{% endif %}
     </ul>
 
     <h2>Beschreibung</h2>
     {{description}}
+    
+    <div>
+        <br>
+        <a style="margin-right: 10px" href="http://www.wikipedia.de/go?l=de&q={{title}}"><i class="fa fa-2x fa-wikipedia-w"></i></a>
+        <a style="margin-right: 10px" href="http://www.youtube.com/results?search_query={{title}}"><i class="fa fa-2x fa-youtube"></i></a>
+        <a style="margin-right: 10px" href="http://www.imdb.com/find?q={{title}}"><i class="fa fa-2x fa-film"></i></a>
+    </div>
 </div>
 {% endblock %}
