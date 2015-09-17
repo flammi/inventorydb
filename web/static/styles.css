@@ -26,6 +26,7 @@ body {
     transition: color 0.5s;
 }
 
+
 .item img {
     filter: brightness(1);
     transition: filter 0.5s;
@@ -78,4 +79,14 @@ a:hover {
 }
 #backlink:hover {
     color: #0ad;
+}
+
+.filters a {
+    background-color: #faa;
+    padding: 5px;
+    border-radius: 8px;
+    margin: 10px
+}
+.filters a:hover {
+    color: white;
 }

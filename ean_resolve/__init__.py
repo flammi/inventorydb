@@ -25,10 +25,14 @@ def resolve_ean(ean, dl_dir=None):
             res["ean"] = ean
 
             #Resolve genre when movie
+            res["genre"] = None
+            res["firstrelease"] = None 
+
             if res["type"] == "movie":
-                res["genre"] = geizhals.resolve_ean(ean)["genre"]
-            else:
-                res["genre"] = None
+                gh_data = geizhals.resolve_ean(ean)
+                if gh_data:
+                    res["genre"] = gh_data["genre"]
+                    res["firstrelease"] = gh_data["firstrelease"]
 
             #Download pic when required
             if dl_dir:

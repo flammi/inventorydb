@@ -22,6 +22,17 @@ def get_db():
         db.row_factory = dict_factory
     return db
 
+def insert_from_dict(table, d, mappings, exclude):
+    d_without_none = {k: v for k,v in d.items() if k != None and k not in exclude and k not in mappings.keys()}
+    d_without_none.update({t: d[f] for f, t in mappings.items() if f in d.keys()})
+    import pprint; pprint.pprint(d_without_none)
+    db = get_db()
+    cursor = db.cursor()
+    stmt = "INSERT INTO {} ({}) VALUES ({})".format(table, ",".join(d_without_none.keys()), ",".join(":"+keyname for keyname in d_without_none.keys()))
+    print(stmt)
+    cursor.execute(stmt, d_without_none)
+    db.commit()
+
 def query_db(statement, args=None):
     cur = get_db().cursor()
     if args is None:
@@ -50,27 +61,25 @@ def images(filename):
 
 def ean_add_to_db(ean):
     d = resolve_ean(ean, "images")
-    d["added_date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    d["added"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     print(d)
 
     if isinstance(d["artists"], list):
         d["artists"] = ",".join(d["artists"]) 
 
-    cur = get_db().cursor()
-    cur.execute("INSERT INTO inventory (ean, category, title, description, duration, imgfile, author, artists, created, added, studio, genre) VALUES (:ean, :type, :title, :description, :duration, :imgfile, :author, :artists, :created, :added_date, :studio, :genre)", d)
-    get_db().commit()
-
+    insert_from_dict("inventory", d, {"type": "category"}, ["imgurl"])
     return d
 
 def query_items(category):
-    sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "created"])
+    sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "firstrelease", "genre"])
     direction = save_choice(request.args, "dir", ["asc", "desc"])
     
     items = query_db('SELECT * FROM inventory WHERE category = "{}" and title IS NOT NULL ORDER BY {} {}'.format(category, sortorder, direction))
+    filters = query_db("SELECT genre FROM inventory WHERE category=? GROUP BY genre", (category,))
     for i in items:
         i["created"] = time.strftime("%d.%m.%Y", time.strptime(i["created"], "%Y-%m-%d"))
 
-    return render_template("index.html", items=items)
+    return render_template("index.html", items=items, filters=filters)
 
 @app.route("/")
 def main():
