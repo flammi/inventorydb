@@ -31,8 +31,7 @@ def resolve_ean(ean, dl_dir=None):
             if res["type"] == "movie":
                 gh_data = geizhals.resolve_ean(ean)
                 if gh_data:
-                    res["genre"] = gh_data["genre"]
-                    res["firstrelease"] = gh_data["firstrelease"]
+                    res.update(gh_data)
 
             #Download pic when required
             if dl_dir:
