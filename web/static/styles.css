@@ -9,8 +9,11 @@ body {
 }
 
 .itemcontainer {
+    display: -webkit-flex;
     display: flex; 
+    -webkit-flex-wrap: wrap;
     flex-wrap: wrap;
+    -webkit-align-items: baseline;
     align-items: baseline;
 }
 
@@ -49,6 +52,7 @@ body {
 a {
     text-decoration: none;
     color: black;
+    outline: none;
 }
 a:visited {
     color: black;
