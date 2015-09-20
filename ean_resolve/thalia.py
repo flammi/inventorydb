@@ -3,8 +3,20 @@ import lxml.html
 import os 
 from collections import defaultdict
 from ean_resolve.utils import defNone, toDBDate
+import re
 
 SEARCH_URL = "http://www.thalia.de/shop/home/suche/?sq={ean}"
+
+dateConvert = [
+    ("\d+.\d+.\d+", lambda x: toDBDate(x, "%d.%m.%Y")),
+    ("\w+ \d\d\d\d", lambda x: toDBDate(x, "%B %Y"))
+    ]
+
+def convert_created(date):
+    for pattern, convertFunc in dateConvert:
+        if re.match(pattern, date):
+            return convertFunc(date)
+    return None
 
 def resolve_ean(ean):
     page = requests.get(SEARCH_URL.format(ean=ean))
@@ -55,7 +67,11 @@ def resolve_ean(ean):
 
     result["studio"] = attr_list.get("Studio")
     result["genre"] = attr_list.get("Genre") 
-    result["created"] = defNone(attr_list.get("Erscheinungsdatum"), lambda x: toDBDate(x, "%d.%m.%Y"))
+    import locale
+    oldlocale = locale.getlocale(locale.LC_TIME)
+    locale.setlocale(locale.LC_TIME, "de_DE.utf8")
+    result["created"] = defNone(attr_list.get("Erscheinungsdatum"), lambda x: convert_created(x.strip()))
+    locale.setlocale(locale.LC_TIME, oldlocale)
 
     return result 
 
@@ -64,5 +80,6 @@ if __name__ == "__main__":
     print(resolve_ean("9783837121834"))
     print(resolve_ean("9783898133098"))
     print(resolve_ean("9783867420761"))
+    print(resolve_ean("9783426503744"))
 
     print(resolve_ean("9783551588883"))

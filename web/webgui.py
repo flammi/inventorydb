@@ -178,5 +178,5 @@ def push_scan_result_get():
     d = query_db("SELECT * FROM movies")
     return jsonify(d[0])
 
-if __name__ == "__main__":
-    app.run("0.0.0.0", debug=True)
+def start_server():
+    app.run("0.0.0.0")
