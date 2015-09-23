@@ -3,6 +3,7 @@ import lxml.html
 import os 
 import shutil
 import re
+from ean_resolve.utils import defNone, toDBDate, interpDate
 
 SEARCH_URL = "http://www.buecher.de/go/search_search/quick_search/receiver_object/shop_search_quicksearch/"
 
@@ -19,7 +20,12 @@ def resolve_ean(ean):
     result["type"] = html.find('.//li[@class="variant"]').text_content().strip()
     if result["type"] == "Audio CD":
         result["type"] = "audiobook"
-        result["artists"] = result["author"] = html.find('.//a[@class="author"]').text_content().strip()
+        result["author"] = html.find('.//a[@class="author"]').text_content().strip()
+        result["artists"] = None
+    elif result["type"] == "Gebundenes Buch":
+        result["type"] = "book"
+        result["author"] = html.find('.//a[@class="author"]').text_content().strip()
+        result["artists"] = None
     else:
         result["artists"] = result["author"] = None
         result["type"] = "movie"
@@ -53,17 +59,41 @@ def resolve_ean(ean):
     except:
         result["duration"] = None
 
-    result["created"] = defNone(attrs.get("Erscheinungstermin"), lambda x: toDBDate(x, "%d.%m.%Y")) 
+    result["created"] = defNone(attrs.get("Erscheinungstermin"), lambda x: interpDate(x)) 
     result["studio"] = attrs.get("Hersteller")
 
     result["imgurl"] = html.find('.//img[@class="cover"]').attrib["src"]
 
     return result 
 
+def test_poi3():
+    d = resolve_ean("5051890287687")
+    assert d["title"] == "Person of Interest - Die komplette dritte Staffel (6 Discs)"
+    assert d["created"] == "2014-11-06"
+    assert d["type"] == "movie"
+    assert d["studio"] == "Warner Home Video"
 
-if __name__ == "__main__":
-    print(resolve_ean("4010232012210"))
-    print(resolve_ean("9783899641844"))
-#print(resolve_ean("4045167004429"))
-#print(resolve_ean("4010232028969"))
+def test_medicus():
+    d = resolve_ean("9783837121834")
+    assert d["title"] == "Der Medicus / Der Medicus Bd.1 (Audio-CD)"
+    assert d["created"] == None 
+    assert d["type"] == "audiobook"
+    assert d["studio"] == None 
+    assert d["author"] == "Noah Gordon"
+
+def test_sherlockholmes():
+    d = resolve_ean("9783898133098")
+    assert d["title"] == "Sherlock Holmes & Dr. Watson, Die größten Fälle, 5 Audio-CDs"
+    assert d["created"] == None
+    assert d["type"] == "audiobook"
+    assert d["studio"] == None 
+    assert d["author"] == "Arthur C. Doyle"
+
+def test_jkrowling():
+    d = resolve_ean("9783551588883")
+    assert d["title"] == "Ein plötzlicher Todesfall"
+    assert d["created"] == None
+    assert d["type"] == "book"
+    assert d["studio"] == None 
+    assert d["author"] == "Joanne K. Rowling"
 

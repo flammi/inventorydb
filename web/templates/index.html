@@ -14,12 +14,20 @@
             Ansicht:
             {{widget.select("view", [("images", "Bilder"), ("table", "Tabelle") ], request.args["view"])}}
         </form>
+        <br>
+        <br>
         </span>
             {% if filters %}
                 <span class="filters">
-                Filter:           
+                Filter:<br>
+                Genre:           
+                <a href="{{request.path}}">Alle</a>
                 {% for f in filters %}
-                    <a href="{{request.path}}?filter={{f.genre}}">{{f.genre}}</a>
+                    {% if f.genre == request.args["filter"] %}
+                        <a style="background-color: #444; color: white" href="{{request.path}}?filter={{f.genre}}">{{f.genre}}</a>
+                    {% else %}
+                        <a href="{{request.path}}?filter={{f.genre}}">{{f.genre}}</a>
+                    {% endif %}
                 {% endfor %}
                 </span>
             {% endif %}

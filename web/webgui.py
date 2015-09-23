@@ -60,24 +60,34 @@ def images(filename):
     return send_from_directory(os.path.join(os.getcwd(), "images"), filename)
 
 def ean_add_to_db(ean):
-    d = resolve_ean(ean, "images")
-    d["added"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    print(d)
+    res = query_db("SELECT * FROM inventory WHERE ean=:ean", {"ean": ean})
 
-    if isinstance(d["artists"], list):
-        d["artists"] = ",".join(d["artists"]) 
+    if len(res) >= 1:
+        d = res[0]
+    else:
+        d = resolve_ean(ean, "images")
+        d["added"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    insert_from_dict("inventory", d, {"type": "category"}, ["imgurl"])
+        if isinstance(d["artists"], list):
+            d["artists"] = ",".join(d["artists"]) 
+
+        insert_from_dict("inventory", d, {"type": "category"}, ["imgurl"])
+
     return d
 
 def query_items(category):
     sortorder = save_choice(request.args, "order", ["title", "ean", "duration", "firstrelease", "genre"])
     direction = save_choice(request.args, "dir", ["asc", "desc"])
+
+    if "filter" in request.args:
+        items = query_db('SELECT * FROM inventory WHERE category = :category and genre = :filter and title IS NOT NULL ORDER BY {} {}'.format(sortorder, direction), {"category": category, "filter": request.args["filter"]})
+    else:
+        items = query_db('SELECT * FROM inventory WHERE category = "{}" and title IS NOT NULL ORDER BY {} {}'.format(category, sortorder, direction))
     
-    items = query_db('SELECT * FROM inventory WHERE category = "{}" and title IS NOT NULL ORDER BY {} {}'.format(category, sortorder, direction))
-    filters = query_db("SELECT genre FROM inventory WHERE category=? GROUP BY genre", (category,))
+    filters = query_db("SELECT genre FROM inventory WHERE category=? and genre NOT NULL GROUP BY genre", (category,))
     for i in items:
-        i["created"] = time.strftime("%d.%m.%Y", time.strptime(i["created"], "%Y-%m-%d"))
+        if i["created"] is not None:
+            i["created"] = time.strftime("%d.%m.%Y", time.strptime(i["created"], "%Y-%m-%d"))
 
     return render_template("index.html", items=items, filters=filters)
 
